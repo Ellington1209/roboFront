@@ -49,21 +49,21 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-[rgb(var(--color-bg))]">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+      <header className="bg-[rgb(var(--color-header-bg))] shadow-sm border-b border-[rgb(var(--color-header-border))]">
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
             <div className="flex-1 min-w-0">
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white truncate">Controle de Robôs</h1>
-              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
+              <h1 className="text-xl sm:text-2xl font-bold text-[rgb(var(--color-text))] truncate">Controle de Robôs</h1>
+              <p className="text-xs sm:text-sm text-[rgb(var(--color-text-secondary))] truncate">
                 Bem-vindo, {user?.name}
               </p>
             </div>
             <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
               <button
                 onClick={toggleTheme}
-                className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                className="p-2 rounded-lg bg-[rgb(var(--color-bg-secondary))] text-[rgb(var(--color-text))] hover:opacity-80 transition-colors border border-[rgb(var(--color-card-border))]"
                 aria-label="Alternar tema"
               >
                 {theme === 'dark' ? (
@@ -78,7 +78,7 @@ const Dashboard = () => {
               </button>
               <button
                 onClick={logout}
-                className="px-3 sm:px-4 py-1.5 sm:py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-xs sm:text-sm whitespace-nowrap"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 bg-[rgb(var(--color-danger))] hover:bg-[rgb(var(--color-danger-hover))] text-white rounded-lg transition-colors text-xs sm:text-sm whitespace-nowrap"
               >
                 Sair
               </button>
@@ -92,13 +92,13 @@ const Dashboard = () => {
         {/* Actions Bar */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
           <div>
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
+            <h2 className="text-lg sm:text-xl font-semibold text-[rgb(var(--color-text))]">
               Meus Robôs ({robots.length})
             </h2>
           </div>
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="w-full sm:w-auto px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2 text-sm sm:text-base"
+            className="w-full sm:w-auto px-4 py-2 bg-[rgb(var(--color-primary))] hover:bg-[rgb(var(--color-primary-hover))] text-white rounded-lg transition-colors flex items-center justify-center gap-2 text-sm sm:text-base"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

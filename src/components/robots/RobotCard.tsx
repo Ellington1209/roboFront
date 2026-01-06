@@ -28,10 +28,10 @@ const RobotCard = ({ robot, onClick }: RobotCardProps) => {
   return (
     <div
       onClick={onClick}
-      className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-shadow cursor-pointer overflow-hidden border border-gray-200 dark:border-gray-700"
+      className="bg-[rgb(var(--color-card))] rounded-lg shadow-md hover:shadow-xl transition-shadow cursor-pointer overflow-hidden border border-[rgb(var(--color-card-border))]"
     >
       {/* Imagem do robô */}
-      <div className="relative h-48 bg-gray-200 dark:bg-gray-700 overflow-hidden">
+      <div className="relative h-48 bg-[rgb(var(--color-bg-secondary))] overflow-hidden">
         {primaryImage ? (
           <img
             src={getImageUrl(primaryImage.url)}
@@ -42,7 +42,7 @@ const RobotCard = ({ robot, onClick }: RobotCardProps) => {
             }}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-400 dark:text-gray-500">
+          <div className="w-full h-full flex items-center justify-center text-[rgb(var(--color-text-muted))]">
             <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
@@ -74,10 +74,10 @@ const RobotCard = ({ robot, onClick }: RobotCardProps) => {
 
       {/* Conteúdo do card */}
       <div className="p-4">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 line-clamp-1">
+        <h3 className="text-lg font-bold text-[rgb(var(--color-text))] mb-2 line-clamp-1">
           {robot.name}
         </h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+        <p className="text-sm text-[rgb(var(--color-text-secondary))] mb-3 line-clamp-2">
           {robot.description || 'Sem descrição'}
         </p>
 
@@ -101,7 +101,7 @@ const RobotCard = ({ robot, onClick }: RobotCardProps) => {
         )}
 
         {/* Informações adicionais */}
-        <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+        <div className="flex items-center justify-between text-xs text-[rgb(var(--color-text-muted))]">
           <div className="flex items-center gap-1">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />

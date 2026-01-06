@@ -4,7 +4,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -17,7 +17,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await authService.login({ email, password });
+      const response = await authService.login({ phone, password });
       // Atualiza o contexto com os dados do usuário
       login(response.user, response.token);
       // Redirecionar após login bem-sucedido
@@ -34,11 +34,11 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-[rgb(var(--color-bg))] px-4 sm:px-6 lg:px-8">
       <div className="absolute top-4 right-4">
         <button
           onClick={toggleTheme}
-          className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+          className="p-2 rounded-lg bg-[rgb(var(--color-bg-secondary))] text-[rgb(var(--color-text))] hover:opacity-80 transition-colors border border-[rgb(var(--color-card-border))]"
           aria-label="Alternar tema"
         >
           {theme === 'dark' ? (
@@ -55,10 +55,10 @@ const Login = () => {
 
       <div className="max-w-md w-full space-y-8">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-[rgb(var(--color-text))]">
             Controle de robos
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+          <p className="mt-2 text-center text-sm text-[rgb(var(--color-text-secondary))]">
             Entre com suas credenciais
           </p>
         </div>
@@ -79,19 +79,19 @@ const Login = () => {
           )}
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
-              <label htmlFor="email" className="sr-only">
-                Email
+              <label htmlFor="phone" className="sr-only">
+                Telefone
               </label>
               <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
+                id="phone"
+                name="phone"
+                type="tel"
+                autoComplete="tel"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Email"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-[rgb(var(--color-input-border))] placeholder-[rgb(var(--color-text-muted))] text-[rgb(var(--color-text))] bg-[rgb(var(--color-input-bg))] rounded-t-md focus:outline-none focus:ring-[rgb(var(--color-primary))] focus:border-[rgb(var(--color-primary))] focus:z-10 sm:text-sm"
+                placeholder="Telefone"
               />
             </div>
             <div>
@@ -106,7 +106,7 @@ const Login = () => {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-[rgb(var(--color-input-border))] placeholder-[rgb(var(--color-text-muted))] text-[rgb(var(--color-text))] bg-[rgb(var(--color-input-bg))] rounded-b-md focus:outline-none focus:ring-[rgb(var(--color-primary))] focus:border-[rgb(var(--color-primary))] focus:z-10 sm:text-sm"
                 placeholder="Senha"
               />
             </div>
@@ -118,15 +118,15 @@ const Login = () => {
                 id="remember-me"
                 name="remember-me"
                 type="checkbox"
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-600 rounded"
+                className="h-4 w-4 text-[rgb(var(--color-primary))] focus:ring-[rgb(var(--color-primary))] border-[rgb(var(--color-input-border))] rounded"
               />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900 dark:text-gray-300">
+              <label htmlFor="remember-me" className="ml-2 block text-sm text-[rgb(var(--color-text))]">
                 Lembrar-me
               </label>
             </div>
 
             <div className="text-sm">
-              <a href="#" className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500">
+              <a href="#" className="font-medium text-[rgb(var(--color-primary))] hover:opacity-80">
                 Esqueceu a senha?
               </a>
             </div>
@@ -136,7 +136,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-indigo-500 dark:hover:bg-indigo-600"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[rgb(var(--color-primary))] hover:bg-[rgb(var(--color-primary-hover))] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[rgb(var(--color-primary))] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <span className="flex items-center">

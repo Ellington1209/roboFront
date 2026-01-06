@@ -163,12 +163,27 @@ const CreateRobotModal = ({ isOpen, onClose, onSubmit }: CreateRobotModalProps) 
     });
   };
 
+  // Função para gerar key a partir do label (lowercase, espaços viram hífens)
+  const generateKeyFromLabel = (label: string): string => {
+    return label
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '-') // Substitui espaços por hífens
+      .replace(/[^a-z0-9-]/g, ''); // Remove caracteres especiais, mantém apenas letras, números e hífens
+  };
+
   const updateParameter = (index: number, field: string, value: unknown) => {
     const newParameters = [...formData.parameters];
     newParameters[index] = {
       ...newParameters[index],
       [field]: value,
     };
+    
+    // Se o campo alterado for 'label', atualiza automaticamente a 'key'
+    if (field === 'label' && typeof value === 'string') {
+      newParameters[index].key = generateKeyFromLabel(value);
+    }
+    
     setFormData({
       ...formData,
       parameters: newParameters,
@@ -265,7 +280,7 @@ const CreateRobotModal = ({ isOpen, onClose, onSubmit }: CreateRobotModalProps) 
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Tags
                     <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
-                      (palavras-chave para categorizar e buscar robôs, ex: trading, forex, scalping)
+                      (tempo que roda o robô, palavras-chave para categorizar e buscar robôs, ex: trading, forex, scalping)
                     </span>
                   </label>
                   <div className="flex flex-col sm:flex-row gap-2 mb-2">
@@ -351,21 +366,10 @@ const CreateRobotModal = ({ isOpen, onClose, onSubmit }: CreateRobotModalProps) 
                             </button>
                           </div>
 
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div>
-                              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                Chave (key) *
-                              </label>
-                              <input
-                                type="text"
-                                required
-                                value={param.key}
-                                onChange={(e) => updateParameter(index, 'key', e.target.value)}
-                                placeholder="ex: stopLoss"
-                                className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
-                              />
-                            </div>
+                          {/* Campo key escondido - será gerado automaticamente a partir do label */}
+                          <input type="hidden" value={param.key} />
 
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
                               <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 Label (nome exibido) *
@@ -378,6 +382,11 @@ const CreateRobotModal = ({ isOpen, onClose, onSubmit }: CreateRobotModalProps) 
                                 placeholder="ex: Stop Loss"
                                 className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
                               />
+                              {param.key && (
+                                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                  Key gerada: <span className="font-mono">{param.key}</span>
+                                </p>
+                              )}
                             </div>
 
                             <div>
