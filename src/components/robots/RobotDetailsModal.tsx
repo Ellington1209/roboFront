@@ -1,4 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus, vs } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { useTheme } from '../../contexts/ThemeContext';
 import { getImageUrl } from '../../utils/imageUtils';
 import type { Robot } from '../../services/robotService';
 
@@ -9,7 +12,33 @@ interface RobotDetailsModalProps {
 }
 
 const RobotDetailsModal = ({ robot, isOpen, onClose }: RobotDetailsModalProps) => {
+  const { theme } = useTheme();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isFullscreenImageOpen, setIsFullscreenImageOpen] = useState(false);
+  const [fullscreenImageIndex, setFullscreenImageIndex] = useState(0);
+
+  const imagesLength = robot?.images?.length || 0;
+
+  const openFullscreenImage = useCallback((index: number) => {
+    setFullscreenImageIndex(index);
+    setIsFullscreenImageOpen(true);
+  }, []);
+
+  const closeFullscreenImage = useCallback(() => {
+    setIsFullscreenImageOpen(false);
+  }, []);
+
+  const nextFullscreenImage = useCallback(() => {
+    if (imagesLength > 0) {
+      setFullscreenImageIndex((prev) => (prev + 1) % imagesLength);
+    }
+  }, [imagesLength]);
+
+  const prevFullscreenImage = useCallback(() => {
+    if (imagesLength > 0) {
+      setFullscreenImageIndex((prev) => (prev - 1 + imagesLength) % imagesLength);
+    }
+  }, [imagesLength]);
 
   useEffect(() => {
     if (robot && robot.images && robot.images.length > 0) {
@@ -28,6 +57,24 @@ const RobotDetailsModal = ({ robot, isOpen, onClose }: RobotDetailsModalProps) =
       document.body.style.overflow = 'unset';
     };
   }, [isOpen]);
+
+  // Detectar tecla ESC para fechar imagem em tela cheia
+  useEffect(() => {
+    if (!isFullscreenImageOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        closeFullscreenImage();
+      } else if (e.key === 'ArrowLeft') {
+        prevFullscreenImage();
+      } else if (e.key === 'ArrowRight') {
+        nextFullscreenImage();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isFullscreenImageOpen, closeFullscreenImage, prevFullscreenImage, nextFullscreenImage]);
 
   if (!isOpen || !robot) return null;
 
@@ -64,6 +111,14 @@ const RobotDetailsModal = ({ robot, isOpen, onClose }: RobotDetailsModalProps) =
       'meta traider': 'Meta Trader',
     };
     return labels[language] || language;
+  };
+
+  const getSyntaxLanguage = (language: string) => {
+    const langMap: Record<string, string> = {
+      nelogica: 'pascal',
+      'meta traider': 'mql',
+    };
+    return langMap[language.toLowerCase()] || 'text';
   };
 
   return (
@@ -123,11 +178,22 @@ const RobotDetailsModal = ({ robot, isOpen, onClose }: RobotDetailsModalProps) =
                     <img
                       src={getImageUrl(currentImage.url)}
                       alt={currentImage.title || robot.name}
-                      className="max-w-full max-h-full object-contain"
+                      className="max-w-full max-h-full object-contain cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => openFullscreenImage(currentImageIndex)}
                       onError={(e) => {
                         (e.target as HTMLImageElement).src = 'https://via.placeholder.com/800x600?text=Image+Error';
                       }}
                     />
+                    {/* Ícone de expandir */}
+                    <button
+                      onClick={() => openFullscreenImage(currentImageIndex)}
+                      className="absolute top-2 right-2 bg-black bg-opacity-50 hover:bg-opacity-75 text-white p-2 rounded-full transition-all"
+                      aria-label="Expandir imagem"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                      </svg>
+                    </button>
 
                     {/* Navegação anterior/próxima */}
                     {images.length > 1 && (
@@ -268,6 +334,48 @@ const RobotDetailsModal = ({ robot, isOpen, onClose }: RobotDetailsModalProps) =
               </div>
             )}
 
+            {/* Código */}
+            {robot.code && (
+              <div className="mb-6">
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Código</h4>
+                <div className="relative rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                  <div className="bg-gray-50 dark:bg-gray-900 px-4 py-2 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {getLanguageLabel(robot.language)}
+                    </span>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(robot.code);
+                      }}
+                      className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors flex items-center gap-1"
+                      title="Copiar código"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                      Copiar
+                    </button>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <SyntaxHighlighter
+                      language={getSyntaxLanguage(robot.language)}
+                      style={theme === 'dark' ? vscDarkPlus : vs}
+                      customStyle={{
+                        margin: 0,
+                        padding: '1rem',
+                        fontSize: '0.875rem',
+                        lineHeight: '1.5',
+                      }}
+                      showLineNumbers
+                      wrapLines
+                    >
+                      {robot.code}
+                    </SyntaxHighlighter>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Informações adicionais */}
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 text-xs sm:text-sm">
               <div>
@@ -308,6 +416,90 @@ const RobotDetailsModal = ({ robot, isOpen, onClose }: RobotDetailsModalProps) =
           </div>
         </div>
       </div>
+
+      {/* Modal de Imagem em Tela Cheia */}
+      {isFullscreenImageOpen && images.length > 0 && (
+        <div className="fixed inset-0 z-[10000] bg-black bg-opacity-95 flex items-center justify-center">
+          {/* Botão fechar */}
+          <button
+            onClick={closeFullscreenImage}
+            className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors z-[10001] p-2"
+            aria-label="Fechar"
+          >
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          {/* Navegação anterior */}
+          {images.length > 1 && (
+            <button
+              onClick={prevFullscreenImage}
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-75 text-white p-3 rounded-full transition-all z-[10001]"
+              aria-label="Imagem anterior"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
+
+          {/* Imagem */}
+          <div className="relative max-w-[95vw] max-h-[95vh] flex items-center justify-center">
+            <img
+              src={getImageUrl(images[fullscreenImageIndex].url)}
+              alt={images[fullscreenImageIndex].title || robot.name}
+              className="max-w-full max-h-[95vh] object-contain"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/800x600?text=Image+Error';
+              }}
+            />
+          </div>
+
+          {/* Navegação próxima */}
+          {images.length > 1 && (
+            <button
+              onClick={nextFullscreenImage}
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-75 text-white p-3 rounded-full transition-all z-[10001]"
+              aria-label="Próxima imagem"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
+
+          {/* Indicador de imagem */}
+          {images.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-4 py-2 rounded-full text-sm">
+              {fullscreenImageIndex + 1} / {images.length}
+            </div>
+          )}
+
+          {/* Miniaturas na parte inferior */}
+          {images.length > 1 && (
+            <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 flex gap-2 max-w-[90vw] overflow-x-auto pb-2">
+              {images.map((image, index) => (
+                <button
+                  key={image.id}
+                  onClick={() => setFullscreenImageIndex(index)}
+                  className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                    index === fullscreenImageIndex
+                      ? 'border-white ring-2 ring-white'
+                      : 'border-gray-600 hover:border-gray-400 opacity-70 hover:opacity-100'
+                  }`}
+                >
+                  <img
+                    src={getImageUrl(image.url)}
+                    alt={image.title || `Imagem ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
