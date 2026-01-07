@@ -3,6 +3,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus, vs } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getImageUrl } from '../../utils/imageUtils';
+import { robotService } from '../../services/robotService';
 import type { Robot } from '../../services/robotService';
 
 interface RobotDetailsModalProps {
@@ -80,6 +81,27 @@ const RobotDetailsModal = ({ robot, isOpen, onClose }: RobotDetailsModalProps) =
 
   const images = robot.images || [];
   const currentImage = images[currentImageIndex];
+
+  const handleDownloadFile = async (fileId: number, fileName: string) => {
+    try {
+      const blob = await robotService.downloadFile(robot.id, fileId);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Erro ao baixar arquivo:', error);
+      // Fallback: tentar abrir URL direta
+      const file = robot.files?.find((f) => f.id === fileId);
+      if (file) {
+        window.open(getImageUrl(file.url), '_blank');
+      }
+    }
+  };
 
   const nextImage = () => {
     if (images.length > 0) {
@@ -372,6 +394,47 @@ const RobotDetailsModal = ({ robot, isOpen, onClose }: RobotDetailsModalProps) =
                       {robot.code}
                     </SyntaxHighlighter>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* Arquivos */}
+            {robot.files && robot.files.length > 0 && (
+              <div className="mb-6">
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                  Arquivos ({robot.files.length})
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {robot.files.map((file) => (
+                    <div
+                      key={file.id}
+                      className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center gap-3"
+                    >
+                      <div className="flex-shrink-0 w-12 h-12 bg-indigo-100 dark:bg-indigo-900 rounded-lg flex items-center justify-center">
+                        <svg className="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                          {file.name || file.original_name}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {file.file_type.toUpperCase()} • {(file.size_bytes / 1024).toFixed(2)} KB
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleDownloadFile(file.id, file.name || file.original_name)}
+                        className="flex-shrink-0 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors text-sm flex items-center gap-2"
+                        title="Baixar arquivo"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Baixar
+                      </button>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

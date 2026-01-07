@@ -37,6 +37,22 @@ export interface RobotImage {
   updated_at: string;
 }
 
+export interface RobotFile {
+  id: number;
+  robot_id: number;
+  name: string;
+  original_name: string;
+  disk: string;
+  path: string;
+  url: string;
+  file_type: 'psf' | 'mq5';
+  mime_type: string;
+  size_bytes: number;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Robot {
   id: number;
   user_id: number;
@@ -58,6 +74,7 @@ export interface Robot {
   };
   parameters: RobotParameter[];
   images: RobotImage[];
+  files: RobotFile[];
 }
 
 export interface RobotsResponse {
@@ -85,11 +102,14 @@ export interface CreateRobotData {
   images?: File[];
   image_titles?: string[];
   image_captions?: string[];
+  files?: File[];
+  file_names?: string[];
 }
 
 export interface UpdateRobotData extends Partial<CreateRobotData> {
   parameters?: RobotParameter[];
   delete_image_ids?: number[];
+  delete_file_ids?: number[];
   create_version?: boolean;
   changelog?: string;
 }
@@ -184,6 +204,20 @@ export const robotService = {
       }
     }
 
+    // Arquivos
+    if (data.files && data.files.length > 0) {
+      data.files.forEach((file) => {
+        formData.append('files[]', file);
+      });
+
+      // Nomes personalizados
+      if (data.file_names) {
+        data.file_names.forEach((name, index) => {
+          formData.append(`file_names[${index}]`, name);
+        });
+      }
+    }
+
     const response = await api.post<{ data: Robot }>('/robots', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -262,6 +296,27 @@ export const robotService = {
       });
     }
 
+    // Novos arquivos
+    if (data.files && data.files.length > 0) {
+      data.files.forEach((file) => {
+        formData.append('files[]', file);
+      });
+
+      // Nomes personalizados
+      if (data.file_names) {
+        data.file_names.forEach((name, index) => {
+          formData.append(`file_names[${index}]`, name);
+        });
+      }
+    }
+
+    // Deletar arquivos
+    if (data.delete_file_ids) {
+      data.delete_file_ids.forEach((fileId) => {
+        formData.append('delete_file_ids[]', String(fileId));
+      });
+    }
+
     // Versionamento
     if (data.create_version) {
       formData.append('create_version', '1');
@@ -281,6 +336,14 @@ export const robotService = {
   // DELETE - Deletar robô
   delete: async (id: number): Promise<void> => {
     await api.delete(`/robots/${id}`);
+  },
+
+  // GET - Download de arquivo
+  downloadFile: async (robotId: number, fileId: number): Promise<Blob> => {
+    const response = await api.get(`/robots/${robotId}/files/${fileId}/download`, {
+      responseType: 'blob',
+    });
+    return response.data;
   },
 };
 

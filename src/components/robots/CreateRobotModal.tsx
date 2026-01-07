@@ -24,6 +24,8 @@ const CreateRobotModal = ({ isOpen, onClose, onSubmit }: CreateRobotModalProps) 
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [imageTitles, setImageTitles] = useState<string[]>([]);
   const [imageCaptions, setImageCaptions] = useState<string[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [fileNames, setFileNames] = useState<string[]>([]);
 
   // Bloquear scroll do body quando modal estiver aberto
   useEffect(() => {
@@ -43,12 +45,14 @@ const CreateRobotModal = ({ isOpen, onClose, onSubmit }: CreateRobotModalProps) 
     setLoading(true);
 
     try {
-      // Preparar dados com imagens
+      // Preparar dados com imagens e arquivos
       const submitData: CreateRobotData = {
         ...formData,
         images: selectedImages.length > 0 ? selectedImages : undefined,
         image_titles: imageTitles.some((t) => t.trim()) ? imageTitles : undefined,
         image_captions: imageCaptions.some((c) => c.trim()) ? imageCaptions : undefined,
+        files: selectedFiles.length > 0 ? selectedFiles : undefined,
+        file_names: fileNames.some((n) => n.trim()) ? fileNames : undefined,
       };
 
       await onSubmit(submitData);
@@ -67,6 +71,8 @@ const CreateRobotModal = ({ isOpen, onClose, onSubmit }: CreateRobotModalProps) 
       setImagePreviews([]);
       setImageTitles([]);
       setImageCaptions([]);
+      setSelectedFiles([]);
+      setFileNames([]);
       onClose();
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -132,6 +138,38 @@ const CreateRobotModal = ({ isOpen, onClose, onSubmit }: CreateRobotModalProps) 
     setImagePreviews(newPreviews);
     setImageTitles(newTitles);
     setImageCaptions(newCaptions);
+  };
+
+  // Upload de arquivos
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    // Validar tipos de arquivo (.psf e .mq5)
+    const validFiles = files.filter((file) => {
+      const extension = file.name.toLowerCase().split('.').pop();
+      return extension === 'psf' || extension === 'mq5';
+    });
+
+    if (validFiles.length !== files.length) {
+      setError('Apenas arquivos .psf e .mq5 são permitidos');
+      return;
+    }
+
+    const newFiles = [...selectedFiles, ...validFiles];
+    setSelectedFiles(newFiles);
+
+    // Inicializar nomes personalizados (usar nome original se não especificado)
+    const newFileNames = [...fileNames, ...validFiles.map((f) => f.name)];
+    setFileNames(newFileNames);
+  };
+
+  const removeFile = (index: number) => {
+    const newFiles = selectedFiles.filter((_, i) => i !== index);
+    const newFileNames = fileNames.filter((_, i) => i !== index);
+
+    setSelectedFiles(newFiles);
+    setFileNames(newFileNames);
   };
 
   // Gerenciar parâmetros
@@ -523,6 +561,72 @@ const CreateRobotModal = ({ isOpen, onClose, onSubmit }: CreateRobotModalProps) 
                             <button
                               type="button"
                               onClick={() => removeImage(index)}
+                              className="text-red-600 hover:text-red-700 p-1"
+                            >
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Upload de Arquivos */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Arquivos
+                    <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                      (arquivos .psf e .mq5, você pode enviar múltiplos arquivos)
+                    </span>
+                  </label>
+                  <input
+                    type="file"
+                    accept=".psf,.mq5"
+                    multiple
+                    onChange={handleFileChange}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+
+                  {selectedFiles.length > 0 && (
+                    <div className="mt-4 space-y-3">
+                      {selectedFiles.map((file, index) => (
+                        <div
+                          key={index}
+                          className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="flex-shrink-0 w-12 h-12 bg-indigo-100 dark:bg-indigo-900 rounded-lg flex items-center justify-center">
+                              <svg className="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="mb-2">
+                                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                  Nome do arquivo (opcional)
+                                </label>
+                                <input
+                                  type="text"
+                                  value={fileNames[index] || ''}
+                                  onChange={(e) => {
+                                    const newFileNames = [...fileNames];
+                                    newFileNames[index] = e.target.value;
+                                    setFileNames(newFileNames);
+                                  }}
+                                  placeholder={file.name}
+                                  className="w-full px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                                />
+                              </div>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                {file.name} ({(file.size / 1024).toFixed(2)} KB)
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeFile(index)}
                               className="text-red-600 hover:text-red-700 p-1"
                             >
                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
