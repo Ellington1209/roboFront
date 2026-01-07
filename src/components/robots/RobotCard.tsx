@@ -1,12 +1,17 @@
+import { useAuth } from '../../contexts/AuthContext';
 import type { Robot } from '../../services/robotService';
 import { getImageUrl } from '../../utils/imageUtils';
 
 interface RobotCardProps {
   robot: Robot;
   onClick: () => void;
+  onDelete?: (robotId: number) => void;
 }
 
-const RobotCard = ({ robot, onClick }: RobotCardProps) => {
+const RobotCard = ({ robot, onClick, onDelete }: RobotCardProps) => {
+  const { user } = useAuth();
+  const canDelete = user?.email === 'tom@example.com';
+
   const getLanguageColor = (language: string) => {
     const colors: Record<string, string> = {
       nelogica: 'bg-blue-500',
@@ -24,6 +29,13 @@ const RobotCard = ({ robot, onClick }: RobotCardProps) => {
   };
 
   const primaryImage = robot.images?.find((img) => img.is_primary) || robot.images?.[0];
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Previne que o onClick do card seja chamado
+    if (onDelete) {
+      onDelete(robot.id);
+    }
+  };
 
   return (
     <div
@@ -49,7 +61,20 @@ const RobotCard = ({ robot, onClick }: RobotCardProps) => {
           </div>
         )}
         {/* Badge de status */}
-        <div className="absolute top-2 right-2">
+        <div className="absolute top-2 right-2 flex items-center gap-2">
+          {/* Botão de delete (apenas para tom@example.com) */}
+          {canDelete && onDelete && (
+            <button
+              onClick={handleDelete}
+              className="p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full transition-colors shadow-lg z-10"
+              title="Deletar robô"
+              aria-label="Deletar robô"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          )}
           <span
             className={`px-2 py-1 rounded-full text-xs font-semibold ${
               robot.is_active

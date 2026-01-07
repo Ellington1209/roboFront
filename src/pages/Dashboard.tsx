@@ -48,6 +48,20 @@ const Dashboard = () => {
     await loadRobots(); // Recarrega a lista
   };
 
+  const handleDeleteRobot = async (robotId: number) => {
+    if (!window.confirm('Tem certeza que deseja deletar este robô?')) {
+      return;
+    }
+
+    try {
+      await robotService.delete(robotId);
+      await loadRobots(); // Recarrega a lista
+    } catch (error) {
+      console.error('Erro ao deletar robô:', error);
+      alert('Erro ao deletar robô. Tente novamente.');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[rgb(var(--color-bg))]">
       {/* Header */}
@@ -108,7 +122,12 @@ const Dashboard = () => {
         </div>
 
         {/* Robots List */}
-        <RobotList robots={robots} onRobotClick={handleRobotClick} loading={loading} />
+        <RobotList 
+          robots={robots} 
+          onRobotClick={handleRobotClick} 
+          onRobotDelete={handleDeleteRobot}
+          loading={loading} 
+        />
       </main>
 
       {/* Modals */}

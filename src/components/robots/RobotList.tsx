@@ -4,10 +4,11 @@ import RobotCard from './RobotCard';
 interface RobotListProps {
   robots: Robot[];
   onRobotClick: (robot: Robot) => void;
+  onRobotDelete?: (robotId: number) => void;
   loading?: boolean;
 }
 
-const RobotList = ({ robots, onRobotClick, loading }: RobotListProps) => {
+const RobotList = ({ robots, onRobotClick, onRobotDelete, loading }: RobotListProps) => {
   if (loading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
@@ -57,7 +58,12 @@ const RobotList = ({ robots, onRobotClick, loading }: RobotListProps) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
       {robots.map((robot) => (
-        <RobotCard key={robot.id} robot={robot} onClick={() => onRobotClick(robot)} />
+        <RobotCard 
+          key={robot.id} 
+          robot={robot} 
+          onClick={() => onRobotClick(robot)}
+          onDelete={onRobotDelete}
+        />
       ))}
     </div>
   );
